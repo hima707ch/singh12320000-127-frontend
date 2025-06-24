@@ -3,100 +3,107 @@ import { Link, useNavigate } from 'react-router-dom';
 import images from '../assets/images';
 
 const Header = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const response = await fetch('/api/properties/1');
-        const data = await response.json();
-        if (data) {
-          setIsLoggedIn(true);
-          setUserProfile(data);
-        }
-      } catch (error) {
-        console.error('Auth check failed:', error);
-      }
-    };
-    checkAuth();
+    fetchUserProfile();
   }, []);
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    navigate('/propertysearchpage', { state: { query: searchQuery } });
+  const fetchUserProfile = async () => {
+    try {
+      const response = await fetch('/api/users/profile');
+      const data = await response.json();
+      setUserProfile(data);
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+    }
   };
 
   const handleLogout = () => {
-    setIsLoggedIn(false);
     setUserProfile(null);
-    navigate('/');
+    navigate('/loginpage');
   };
 
   return (
-    <header className="bg-gradient-to-r from-blue-600 to-blue-800 shadow-lg">
-      <nav className="container mx-auto px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center" id="Header_1">
+    <header id="Header_1" className="bg-gradient-to-r from-blue-600 to-blue-800 shadow-lg">
+      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          <div className="flex items-center">
             <Link to="/" className="flex items-center">
-              <img src={images[0]} alt="Logo" className="h-10 w-10 rounded-full" />
-              <span className="ml-3 text-xl font-bold text-white hover:text-blue-200 transition-colors">PropertyHub</span>
+              <img id="Header_2" src={images[0]} alt="Logo" className="h-10 w-10 rounded-full"/>
+              <span id="Header_3" className="ml-2 text-white font-bold text-xl hover:text-blue-200">RealEstate Hub</span>
             </Link>
           </div>
 
-          <div className="flex-1 max-w-xl mx-12" id="Header_2">
-            <form onSubmit={handleSearch} className="relative">
-              <input
-                type="text"
-                placeholder="Search properties..."
-                className="w-full px-4 py-2 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-300"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              <button type="submit" className="absolute right-3 top-2">
-                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </button>
-            </form>
-          </div>
+          <div className="hidden md:flex items-center space-x-4">
+            <Link id="Header_4" to="/" className="text-white hover:bg-blue-700 px-3 py-2 rounded-md text-sm font-medium">Home</Link>
+            <Link id="Header_5" to="/propertysearchpage" className="text-white hover:bg-blue-700 px-3 py-2 rounded-md text-sm font-medium">Search Properties</Link>
 
-          <div className="flex items-center space-x-6" id="Header_3">
-            <Link to="/propertysearchpage" className="text-white hover:text-blue-200 transition-colors">Browse</Link>
-            
-            {isLoggedIn ? (
-              <div className="flex items-center space-x-4">
-                <Link to="/userprofilepage" className="flex items-center space-x-2">
-                  <img src={images[1]} alt="Profile" className="h-8 w-8 rounded-full border-2 border-white" />
-                  <span className="text-white hover:text-blue-200 transition-colors">Profile</span>
-                </Link>
+            {userProfile ? (
+              <div className="relative">
                 <button
-                  onClick={handleLogout}
-                  className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors"
+                  id="Header_6"
+                  onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+                  className="flex items-center text-white hover:bg-blue-700 px-3 py-2 rounded-md text-sm font-medium"
                 >
-                  Logout
+                  <img src={userProfile.avatar || images[1]} alt="Profile" className="h-8 w-8 rounded-full mr-2"/>
+                  {userProfile.name}
                 </button>
+
+                {isProfileDropdownOpen && (
+                  <div id="Header_7" className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1">
+                    <Link to="/userprofilepage" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</Link>
+                    <Link to="/propertydetailpage" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Saved Properties</Link>
+                    <button onClick={handleLogout} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</button>
+                  </div>
+                )}
               </div>
             ) : (
-              <div className="flex items-center space-x-4">
-                <Link
-                  to="/loginpage"
-                  className="text-white hover:text-blue-200 transition-colors"
-                >
-                  Login
-                </Link>
-                <Link
-                  to="/registerpage"
-                  className="bg-white text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-100 transition-colors"
-                >
-                  Register
-                </Link>
+              <div className="flex space-x-2">
+                <Link id="Header_8" to="/loginpage" className="bg-white text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-md text-sm font-medium">Login</Link>
+                <Link id="Header_9" to="/registerpage" className="bg-blue-500 text-white hover:bg-blue-400 px-4 py-2 rounded-md text-sm font-medium">Register</Link>
               </div>
             )}
           </div>
+
+          <div className="md:hidden">
+            <button
+              id="Header_10"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="text-white hover:bg-blue-700 p-2 rounded-md"
+            >
+              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                {isMenuOpen ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                )}
+              </svg>
+            </button>
+          </div>
         </div>
+
+        {isMenuOpen && (
+          <div id="Header_11" className="md:hidden pb-4">
+            <Link to="/" className="block text-white hover:bg-blue-700 px-3 py-2 rounded-md text-base font-medium">Home</Link>
+            <Link to="/propertysearchpage" className="block text-white hover:bg-blue-700 px-3 py-2 rounded-md text-base font-medium">Search Properties</Link>
+            {userProfile ? (
+              <>
+                <Link to="/userprofilepage" className="block text-white hover:bg-blue-700 px-3 py-2 rounded-md text-base font-medium">Profile</Link>
+                <Link to="/propertydetailpage" className="block text-white hover:bg-blue-700 px-3 py-2 rounded-md text-base font-medium">Saved Properties</Link>
+                <button onClick={handleLogout} className="block w-full text-left text-white hover:bg-blue-700 px-3 py-2 rounded-md text-base font-medium">Logout</button>
+              </>
+            ) : (
+              <>
+                <Link to="/loginpage" className="block text-white hover:bg-blue-700 px-3 py-2 rounded-md text-base font-medium">Login</Link>
+                <Link to="/registerpage" className="block text-white hover:bg-blue-700 px-3 py-2 rounded-md text-base font-medium">Register</Link>
+              </>
+            )}
+          </div>
+        )}
       </nav>
     </header>
   );
