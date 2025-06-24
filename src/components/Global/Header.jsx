@@ -1,59 +1,86 @@
-import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import images from '../assets/images';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const location = useLocation();
+  const [featuredProperties, setFeaturedProperties] = useState([]);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const navigate = useNavigate();
 
-  const isActive = (path) => {
-    return location.pathname === path ? 'text-blue-500' : 'text-gray-600';
-  };
+  useEffect(() => {
+    const fetchFeaturedProperties = async () => {
+      try {
+        const response = await fetch('/api/properties/featured');
+        const data = await response.json();
+        setFeaturedProperties(data);
+      } catch (error) {
+        console.error('Error fetching featured properties:', error);
+      }
+    };
+    fetchFeaturedProperties();
+
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   return (
-    <header id="Header_1" className="bg-white shadow-lg fixed w-full top-0 z-50">
-      <nav className="container mx-auto px-6 py-3">
+    <header id="Header_1" className={`fixed w-full z-50 transition-all duration-300 ${isScrolled ? 'bg-white shadow-lg' : 'bg-transparent'}`}>
+      <nav className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
-          <Link to="/" className="flex items-center space-x-3" id="Header_2">
-            <img src={images[0]} alt="Logo" className="h-10 w-10 rounded-full" />
-            <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">DreamHome</span>
+          <Link to="/" className="flex items-center space-x-3">
+            <img id="Header_2" src={images[0]} alt="Logo" className="h-10 w-10 rounded-full" />
+            <span id="Header_3" className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">DreamHome</span>
           </Link>
 
-          <div className="hidden md:flex space-x-8" id="Header_3">
-            <Link to="/" className={`${isActive('/')} hover:text-blue-500 transition-colors duration-200 font-semibold`}>Home</Link>
-            <Link to="/propertysearchpage" className={`${isActive('/propertysearchpage')} hover:text-blue-500 transition-colors duration-200 font-semibold`}>Search</Link>
-            <Link to="/propertydetailpage" className={`${isActive('/propertydetailpage')} hover:text-blue-500 transition-colors duration-200 font-semibold`}>Properties</Link>
-            <Link to="/userprofilepage" className={`${isActive('/userprofilepage')} hover:text-blue-500 transition-colors duration-200 font-semibold`}>Profile</Link>
+          <div className="hidden md:flex items-center space-x-8">
+            <Link id="Header_4" to="/" className="text-gray-700 hover:text-blue-600 transition-colors duration-300">Home</Link>
+            <Link id="Header_5" to="/propertysearchpage" className="text-gray-700 hover:text-blue-600 transition-colors duration-300">Search Properties</Link>
+            <div id="Header_6" className="relative group">
+              <button className="text-gray-700 hover:text-blue-600 transition-colors duration-300">Featured</button>
+              <div className="absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 hidden group-hover:block">
+                {featuredProperties.slice(0, 3).map((property, index) => (
+                  <Link
+                    key={index}
+                    to="/propertydetailpage"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50"
+                  >
+                    {property.title}
+                  </Link>
+                ))}
+              </div>
+            </div>
           </div>
 
-          <div className="hidden md:flex items-center space-x-4" id="Header_4">
-            <Link to="/loginpage" className="px-4 py-2 text-gray-600 hover:text-blue-500 transition-colors duration-200 font-semibold">Login</Link>
-            <Link to="/registerpage" className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200 font-semibold">Register</Link>
+          <div className="hidden md:flex items-center space-x-4">
+            <Link id="Header_7" to="/loginpage" className="px-6 py-2 text-gray-700 hover:text-blue-600 transition-colors duration-300">Login</Link>
+            <Link id="Header_8" to="/registerpage" className="px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full hover:opacity-90 transition-opacity duration-300">Sign Up</Link>
           </div>
 
           <button
+            id="Header_9"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="md:hidden focus:outline-none"
-            id="Header_5"
+            className="md:hidden text-gray-700 hover:text-blue-600 focus:outline-none"
           >
-            <svg className="w-6 h-6 text-gray-600" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               {isMenuOpen ? (
-                <path d="M6 18L18 6M6 6l12 12" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               ) : (
-                <path d="M4 6h16M4 12h16M4 18h16" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               )}
             </svg>
           </button>
         </div>
 
         {isMenuOpen && (
-          <div className="md:hidden mt-4 pb-4" id="Header_6">
-            <Link to="/" className={`block py-2 ${isActive('/')} hover:text-blue-500`}>Home</Link>
-            <Link to="/propertysearchpage" className={`block py-2 ${isActive('/propertysearchpage')} hover:text-blue-500`}>Search</Link>
-            <Link to="/propertydetailpage" className={`block py-2 ${isActive('/propertydetailpage')} hover:text-blue-500`}>Properties</Link>
-            <Link to="/userprofilepage" className={`block py-2 ${isActive('/userprofilepage')} hover:text-blue-500`}>Profile</Link>
-            <Link to="/loginpage" className="block py-2 text-gray-600 hover:text-blue-500">Login</Link>
-            <Link to="/registerpage" className="block py-2 text-gray-600 hover:text-blue-500">Register</Link>
+          <div id="Header_10" className="md:hidden mt-4 bg-white rounded-lg shadow-lg p-4">
+            <Link to="/" className="block py-2 text-gray-700 hover:text-blue-600">Home</Link>
+            <Link to="/propertysearchpage" className="block py-2 text-gray-700 hover:text-blue-600">Search Properties</Link>
+            <Link to="/loginpage" className="block py-2 text-gray-700 hover:text-blue-600">Login</Link>
+            <Link to="/registerpage" className="block py-2 text-gray-700 hover:text-blue-600">Sign Up</Link>
           </div>
         )}
       </nav>
